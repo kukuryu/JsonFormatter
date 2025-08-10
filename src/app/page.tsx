@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button"; // Shadcn/ui 버튼
 import { Textarea } from "@/components/ui/textarea"; // Shadcn/ui 텍스트에어리어
 import {
@@ -18,11 +18,15 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion" // Accordion 임포트
+// 자동광고만 사용할 것이므로 배너 컴포넌트 제거
 
 export default function Home() {
   const [inputJson, setInputJson] = useState("");
   const [outputJson, setOutputJson] = useState("");
   const [error, setError] = useState("");
+  const [indent, setIndent] = useState<number>(2);
+  const [sortKeys, setSortKeys] = useState<boolean>(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleFormat = () => {
     if (!inputJson.trim()) {
@@ -32,10 +36,30 @@ export default function Home() {
     }
     try {
       const parsedJson = JSON.parse(inputJson);
-      const formattedString = JSON.stringify(parsedJson, null, 2);
+      const normalized = sortKeys ? sortObjectDeep(parsedJson) : parsedJson;
+      const formattedString = JSON.stringify(normalized, null, indent);
       setOutputJson(formattedString);
       setError("");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (e: any) {
+      setError(`Invalid JSON: ${e.message}`);
+      setOutputJson("");
+    }
+  };
+
+  const handleMinify = () => {
+    if (!inputJson.trim()) {
+      setError("Please paste some JSON data first.");
+      setOutputJson("");
+      return;
+    }
+    try {
+      const parsedJson = JSON.parse(inputJson);
+      const normalized = sortKeys ? sortObjectDeep(parsedJson) : parsedJson;
+      const minified = JSON.stringify(normalized);
+      setOutputJson(minified);
+      setError("");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       setError(`Invalid JSON: ${e.message}`);
       setOutputJson("");
@@ -64,6 +88,76 @@ export default function Home() {
     );
   };
 
+  const handleValidate = () => {
+    if (!inputJson.trim()) {
+      setError("Please paste some JSON data first.");
+      setOutputJson("");
+      return;
+    }
+    try {
+      const parsed = JSON.parse(inputJson);
+      setError("");
+      setOutputJson(JSON.stringify(parsed, null, indent));
+      alert("Valid JSON ✔");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (e: any) {
+      setError(`Invalid JSON: ${e.message}`);
+      setOutputJson("");
+    }
+  };
+
+  const handleDownload = () => {
+    const content = outputJson || inputJson;
+    if (!content.trim()) {
+      alert("There is nothing to download!");
+      return;
+    }
+    const blob = new Blob([content], { type: "application/json;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "data.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleUploadFile: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = String(reader.result || "");
+      setInputJson(text);
+      setError("");
+    };
+    reader.onerror = () => {
+      alert("Failed to read file.");
+    };
+    reader.readAsText(file);
+    // reset input so onChange will fire for the same file again later
+    e.currentTarget.value = "";
+  };
+
+  function sortObjectDeep(value: unknown): unknown {
+    if (Array.isArray(value)) {
+      return value.map(sortObjectDeep);
+    }
+    if (value !== null && typeof value === "object") {
+      const sorted: Record<string, unknown> = {};
+      Object.keys(value as Record<string, unknown>)
+        .sort((a, b) => a.localeCompare(b))
+        .forEach((key) => {
+          sorted[key] = sortObjectDeep((value as Record<string, unknown>)[key]);
+        });
+      return sorted;
+    }
+    return value;
+  }
+
   return (
     <main className="flex flex-col items-center p-4 sm:p-8 md:p-12 min-h-screen bg-slate-50 dark:bg-slate-900">
       <div className="w-full max-w-7xl">
@@ -75,6 +169,8 @@ export default function Home() {
             Paste your JSON data to format it beautifully.
           </p>
         </header>
+
+        {/* 자동광고 사용: 별도 배너 삽입 없음 */}
 
         {/* 메인 레이아웃: 입력창과 출력창 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -89,6 +185,13 @@ export default function Home() {
                 onChange={(e) => setInputJson(e.target.value)}
                 placeholder="여기에 JSON 데이터를 붙여넣으세요..."
                 className="w-full h-96 font-mono text-sm resize-none"
+              />
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="application/json,.json,.txt"
+                className="hidden"
+                onChange={handleUploadFile}
               />
             </CardContent>
           </Card>
@@ -114,16 +217,44 @@ export default function Home() {
           </Card>
         </div>
 
-        {/* 중앙: 컨트롤 버튼 */}
-        <div className="flex justify-center items-center gap-4 my-6">
-          <Button onClick={handleFormat}>Format JSON</Button>
-          <Button variant="secondary" onClick={handleClear}>
-            Clear
-          </Button>
-          <Button variant="outline" onClick={handleCopy}>
-            Copy to Clipboard
-          </Button>
+        {/* 중앙: 컨트롤 */}
+        <div className="flex flex-col items-center gap-4 my-6">
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <label className="text-sm text-slate-600 dark:text-slate-300">
+              들여쓰기
+              <select
+                value={indent}
+                onChange={(e) => setIndent(Number(e.target.value))}
+                className="ml-2 rounded-md border px-2 py-1 bg-white dark:bg-slate-800"
+              >
+                <option value={2}>2</option>
+                <option value={4}>4</option>
+                <option value={6}>6</option>
+                <option value={8}>8</option>
+              </select>
+            </label>
+            <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+              <input
+                type="checkbox"
+                checked={sortKeys}
+                onChange={(e) => setSortKeys(e.target.checked)}
+              />
+              키 정렬
+            </label>
+          </div>
+
+          <div className="flex flex-wrap justify-center items-center gap-3">
+            <Button onClick={handleFormat}>Format</Button>
+            <Button variant="secondary" onClick={handleMinify}>Minify</Button>
+            <Button variant="outline" onClick={handleValidate}>Validate</Button>
+            <Button variant="outline" onClick={handleCopy}>Copy</Button>
+            <Button variant="outline" onClick={handleDownload}>Download</Button>
+            <Button variant="ghost" onClick={handleUploadClick}>Upload</Button>
+            <Button variant="ghost" onClick={handleClear}>Clear</Button>
+          </div>
         </div>
+
+        {/* 자동광고 사용: 별도 배너 삽입 없음 */}
       </div>
       {/* ================================================================== */}
       {/* =================  여기부터 설명 콘텐츠 섹션  ================== */}

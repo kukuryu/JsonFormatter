@@ -1,0 +1,51 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+
+type AdBannerProps = {
+  dataAdSlot?: string;
+  dataAdFormat?: string;
+  dataFullWidthResponsive?: boolean;
+  className?: string;
+};
+
+export default function AdBanner({
+  dataAdSlot,
+  dataAdFormat = "auto",
+  dataFullWidthResponsive = true,
+  className,
+}: AdBannerProps) {
+  const insRef = useRef<HTMLDivElement>(null);
+  const hasClient = typeof window !== "undefined";
+  const isProd = hasClient && process.env.NODE_ENV === "production";
+  const testMode = hasClient && process.env.NEXT_PUBLIC_ADSENSE_TEST_MODE === "true";
+  const adsClient = process.env.NEXT_PUBLIC_ADSENSE_CLIENT || "ca-pub-9152326797358801";
+  const shouldRender = (isProd || testMode) && !!adsClient && !!dataAdSlot;
+
+  useEffect(() => {
+    if (!hasClient) return;
+    if (!shouldRender) return;
+    // @ts-expect-error AdSense global
+    (window.adsbygoogle = window.adsbygoogle || []).push({});
+  }, [hasClient, shouldRender]);
+
+  if (!shouldRender) {
+    return null;
+  }
+
+  return (
+    <div className={className} ref={insRef}>
+      <ins
+        className="adsbygoogle"
+        style={{ display: "block" }}
+        data-ad-client={adsClient}
+        data-ad-slot={dataAdSlot}
+        data-ad-format={dataAdFormat}
+        data-full-width-responsive={dataFullWidthResponsive ? "true" : "false"}
+        {...(testMode ? { "data-adtest": "on" } : {})}
+      />
+    </div>
+  );
+}
+
+
