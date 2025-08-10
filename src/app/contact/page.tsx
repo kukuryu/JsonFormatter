@@ -4,11 +4,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
-export const metadata = {
-  title: "문의",
-  description: "JSON Formatter 문의 페이지",
-};
-
 export default function ContactPage() {
   const [message, setMessage] = useState("");
   const [email, setEmail] = useState("");
