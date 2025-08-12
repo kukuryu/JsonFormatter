@@ -19,33 +19,33 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://json-formatter.exam
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "JSON Formatter · JSON 포맷터/검증/미니파이",
+    default: "JSON Formatter · Format, Validate, Minify",
     template: "%s · JSON Formatter",
   },
   description:
-    "JSON을 브라우저에서 안전하게 포맷/검증/미니파이 합니다. 데이터는 서버로 전송되지 않습니다.",
+    "Safely format, validate, and minify JSON in your browser. No data leaves your device.",
   keywords: [
     "JSON",
-    "JSON Formatter",
-    "JSON 포맷터",
-    "미니파이",
-    "검증",
-    "정렬",
-    "들여쓰기",
+    "JSON formatter",
+    "format JSON",
+    "minify JSON",
+    "validate JSON",
+    "sort keys",
+    "indent",
   ],
   openGraph: {
     type: "website",
     url: siteUrl,
-    title: "JSON Formatter · JSON 포맷터/검증/미니파이",
+    title: "JSON Formatter · Format, Validate, Minify",
     description:
-      "JSON을 브라우저에서 안전하게 포맷/검증/미니파이 합니다. 데이터는 서버로 전송되지 않습니다.",
+      "Safely format, validate, and minify JSON in your browser. No data leaves your device.",
     siteName: "JSON Formatter",
   },
   twitter: {
     card: "summary_large_image",
-    title: "JSON Formatter · JSON 포맷터/검증/미니파이",
+    title: "JSON Formatter · Format, Validate, Minify",
     description:
-      "JSON을 브라우저에서 안전하게 포맷/검증/미니파이 합니다. 데이터는 서버로 전송되지 않습니다.",
+      "Safely format, validate, and minify JSON in your browser. No data leaves your device.",
   },
   robots: {
     index: true,
@@ -59,7 +59,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko">
+    <html lang="en">
       <head>
         <script
           async
@@ -78,7 +78,7 @@ export default function RootLayout({
               applicationCategory: 'DeveloperApplication',
               operatingSystem: 'Web',
               description:
-                'JSON을 브라우저에서 안전하게 포맷/검증/미니파이 하는 무료 툴',
+                'Free tool to format, validate, and minify JSON safely in your browser',
             }),
           }}
         />
@@ -89,10 +89,10 @@ export default function RootLayout({
             <div className="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
               <Link href="/" className="text-lg font-semibold">JSON Formatter</Link>
               <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-slate-300">
-                <Link href="/about" className="hover:underline">소개</Link>
-                <Link href="/privacy" className="hover:underline">개인정보처리방침</Link>
-                <Link href="/terms" className="hover:underline">이용약관</Link>
-                <Link href="/contact" className="hover:underline">문의</Link>
+                <Link href="/about" className="hover:underline">About</Link>
+                <Link href="/privacy" className="hover:underline">Privacy Policy</Link>
+                <Link href="/terms" className="hover:underline">Terms</Link>
+                <Link href="/contact" className="hover:underline">Contact</Link>
               </div>
             </div>
           </nav>
@@ -101,8 +101,8 @@ export default function RootLayout({
             <div className="mx-auto max-w-7xl px-4 py-8 text-sm text-slate-500 dark:text-slate-400 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <p>© {new Date().getFullYear()} JSON Formatter. All rights reserved.</p>
               <div className="flex items-center gap-4">
-                <Link href="/privacy" className="hover:underline">개인정보처리방침</Link>
-                <Link href="/terms" className="hover:underline">이용약관</Link>
+                <Link href="/privacy" className="hover:underline">Privacy Policy</Link>
+                <Link href="/terms" className="hover:underline">Terms</Link>
               </div>
             </div>
           </footer>

@@ -20,9 +20,31 @@ import {
 } from "@/components/ui/accordion" // Accordion 임포트
 // 자동광고만 사용할 것이므로 배너 컴포넌트 제거
 
+const SAMPLE_JSON = `{
+  "user": {
+    "id": 123,
+    "name": "Jane Doe",
+    "email": "jane@example.com"
+  },
+  "roles": ["admin", "editor"],
+  "active": true,
+  "profile": {
+    "joinedAt": "2024-08-01T10:20:30.000Z",
+    "score": 9876
+  }
+}`;
+
+function computeInitialOutput(sample: string, indent: number) {
+  try {
+    return JSON.stringify(JSON.parse(sample), null, indent);
+  } catch {
+    return "";
+  }
+}
+
 export default function Home() {
-  const [inputJson, setInputJson] = useState("");
-  const [outputJson, setOutputJson] = useState("");
+  const [inputJson, setInputJson] = useState(SAMPLE_JSON);
+  const [outputJson, setOutputJson] = useState(computeInitialOutput(SAMPLE_JSON, 2));
   const [error, setError] = useState("");
   const [indent, setIndent] = useState<number>(2);
   const [sortKeys, setSortKeys] = useState<boolean>(false);
@@ -42,7 +64,9 @@ export default function Home() {
       setError("");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
-      setError(`Invalid JSON: ${e.message}`);
+      const message: string = e?.message || "Invalid JSON";
+      const enhanced = enhanceJsonError(message, inputJson);
+      setError(enhanced);
       setOutputJson("");
     }
   };
@@ -61,7 +85,9 @@ export default function Home() {
       setError("");
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
-      setError(`Invalid JSON: ${e.message}`);
+      const message: string = e?.message || "Invalid JSON";
+      const enhanced = enhanceJsonError(message, inputJson);
+      setError(enhanced);
       setOutputJson("");
     }
   };
@@ -101,7 +127,9 @@ export default function Home() {
       alert("Valid JSON ✔");
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
-      setError(`Invalid JSON: ${e.message}`);
+      const message: string = e?.message || "Invalid JSON";
+      const enhanced = enhanceJsonError(message, inputJson);
+      setError(enhanced);
       setOutputJson("");
     }
   };
@@ -158,6 +186,30 @@ export default function Home() {
     return value;
   }
 
+  function enhanceJsonError(message: string, source: string) {
+    // 일반적으로 V8: "Unexpected token ... in JSON at position 123"
+    const match = message.match(/position\s+(\d+)/i);
+    if (!match) return `Invalid JSON: ${message}`;
+    const pos = Number(match[1]);
+    const { line, column } = getLineCol(source, pos);
+    return `Invalid JSON at line ${line}, column ${column}: ${message}`;
+  }
+
+  function getLineCol(text: string, index: number) {
+    let line = 1;
+    let col = 1;
+    for (let i = 0; i < text.length && i < index; i++) {
+      const ch = text.charAt(i);
+      if (ch === "\n") {
+        line++;
+        col = 1;
+      } else {
+        col++;
+      }
+    }
+    return { line, column: col };
+  }
+
   return (
     <main className="flex flex-col items-center p-4 sm:p-8 md:p-12 min-h-screen bg-slate-50 dark:bg-slate-900">
       <div className="w-full max-w-7xl">
@@ -166,7 +218,7 @@ export default function Home() {
             JSON Formatter
           </h1>
           <p className="text-slate-500 dark:text-slate-400 mt-2">
-            Paste your JSON data to format it beautifully.
+            Paste your JSON and format, validate, or minify it instantly — offline and secure.
           </p>
         </header>
 
@@ -177,7 +229,7 @@ export default function Home() {
           <Card>
             <CardHeader>
               <CardTitle>Input</CardTitle>
-              <CardDescription>Paste your JSON here.</CardDescription>
+              <CardDescription>Paste JSON here or upload a file.</CardDescription>
             </CardHeader>
             <CardContent>
               <Textarea
@@ -200,7 +252,7 @@ export default function Home() {
             <CardHeader>
               <CardTitle>Output</CardTitle>
               <CardDescription>
-                Formatted JSON will appear here.
+                Formatted/minified JSON will appear here.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -221,7 +273,7 @@ export default function Home() {
         <div className="flex flex-col items-center gap-4 my-6">
           <div className="flex flex-wrap items-center justify-center gap-3">
             <label className="text-sm text-slate-600 dark:text-slate-300">
-              들여쓰기
+              Indent
               <select
                 value={indent}
                 onChange={(e) => setIndent(Number(e.target.value))}
@@ -239,7 +291,7 @@ export default function Home() {
                 checked={sortKeys}
                 onChange={(e) => setSortKeys(e.target.checked)}
               />
-              키 정렬
+              Sort keys
             </label>
           </div>
 
@@ -263,25 +315,19 @@ export default function Home() {
       <div className="w-full max-w-4xl mx-auto mt-16 text-slate-700 dark:text-slate-300">
         <div className="space-y-10">
           <div>
-            <h2 className="text-3xl font-bold text-center mb-6">
-              About Our JSON Formatter
-            </h2>
-            <p className="text-lg text-center text-slate-500 dark:text-slate-400 mb-8">
-              더 빠르고, 더 직관적인 JSON 데이터 관리를 경험해 보세요.
-            </p>
+              <h2 className="text-3xl font-bold text-center mb-6">About Our JSON Formatter</h2>
+              <p className="text-lg text-center text-slate-500 dark:text-slate-400 mb-8">
+                Experience faster and more intuitive JSON management in your browser.
+              </p>
           </div>
 
           {/* Feature 1 */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div>
-              <h3 className="text-2xl font-semibold mb-3">
-                JSON이란 무엇인가요?
-              </h3>
+                <h3 className="text-2xl font-semibold mb-3">What is JSON?</h3>
               <p>
-                JSON(JavaScript Object Notation)은 사람이 읽고 쓰기 쉬우며,
-                동시에 기계가 파싱하고 생성하기도 쉬운 경량의 데이터 교환
-                형식입니다. 주로 웹 애플리케이션에서 서버와 클라이언트 간에
-                데이터를 주고받을 때 널리 사용됩니다.
+                  JSON (JavaScript Object Notation) is a lightweight data-interchange format
+                  that is easy for humans to read and write, and easy for machines to parse and generate.
               </p>
             </div>
             <div className="p-6 bg-slate-100 dark:bg-slate-800 rounded-lg">
@@ -300,25 +346,45 @@ export default function Home() {
           {/* Feature 2 */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div className="p-6 bg-slate-100 dark:bg-slate-800 rounded-lg md:order-last">
-              <h3 className="text-xl font-semibold mb-2">간편한 사용법</h3>
+                <h3 className="text-xl font-semibold mb-2">How to use</h3>
               <ul className="list-disc list-inside space-y-2">
-                <li>복잡한 JSON 데이터를 왼쪽 창에 붙여넣으세요.</li>
-                <li>&apos;Format&apos; 버튼을 클릭하여 즉시 변환하세요.</li>
-                <li>깔끔하게 정렬된 결과를 확인하고 복사하세요.</li>
+                  <li>Paste your JSON into the left panel.</li>
+                  <li>Click ‘Format’ to pretty-print instantly.</li>
+                  <li>Copy or download the result from the right panel.</li>
               </ul>
             </div>
             <div>
-              <h3 className="text-2xl font-semibold mb-3">
-                왜 포맷터가 필요한가요?
-              </h3>
+                <h3 className="text-2xl font-semibold mb-3">Why use a formatter?</h3>
               <p>
-                API 응답이나 데이터 파일에서 받은 JSON은 종종 한 줄로 압축되어
-                있어 가독성이 매우 떨어집니다. JSON 포맷터는 들여쓰기와 줄
-                바꿈을 적용하여 데이터의 구조를 한눈에 파악할 수 있게 도와주어,
-                개발자의 디버깅 시간과 실수를 크게 줄여줍니다.
+                  API responses and data files often come minified on a single line.
+                  A formatter applies indentation and line breaks so you can quickly
+                  understand structure, reducing debugging time and mistakes.
               </p>
             </div>
           </div>
+
+            {/* Best Practices */}
+            <div className="space-y-4">
+              <h3 className="text-2xl font-semibold">JSON Best Practices</h3>
+              <ul className="list-disc list-inside space-y-2">
+                <li>Use clear, consistent key names (e.g., lower camelCase).</li>
+                <li>Prefer ISO 8601 strings (UTC) for date/time.</li>
+                <li>Distinguish between null and empty strings.</li>
+                <li>Avoid unnecessary nesting; keep a consistent schema.</li>
+                <li>Do not mix number/string types; validate with a schema.</li>
+              </ul>
+            </div>
+
+            {/* Common Errors */}
+            <div className="space-y-4">
+              <h3 className="text-2xl font-semibold">Common Errors</h3>
+              <ul className="list-disc list-inside space-y-2">
+                <li>Trailing commas after the last item are not allowed.</li>
+                <li>Use double quotes for keys and strings, not single quotes.</li>
+                <li>JSON does not support comments.</li>
+                <li>NaN/Infinity are not valid JSON numbers.</li>
+              </ul>
+            </div>
 
           {/* FAQ Section */}
           {/* <div>
