@@ -1,24 +1,23 @@
-// src/app/page.tsx
+// src/app/(ads)/page.tsx
 
 "use client";
 
 import { useRef, useState } from "react";
-import { Button } from "@/components/ui/button"; // Shadcn/ui 버튼
-import { Textarea } from "@/components/ui/textarea"; // Shadcn/ui 텍스트에어리어
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"; // Shadcn/ui 카드
+} from "@/components/ui/card";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion" // Accordion 임포트
-// 자동광고만 사용할 것이므로 배너 컴포넌트 제거
+} from "@/components/ui/accordion";
 
 const SAMPLE_JSON = `{
   "user": {
@@ -166,7 +165,6 @@ export default function Home() {
       alert("Failed to read file.");
     };
     reader.readAsText(file);
-    // reset input so onChange will fire for the same file again later
     e.currentTarget.value = "";
   };
 
@@ -187,7 +185,6 @@ export default function Home() {
   }
 
   function enhanceJsonError(message: string, source: string) {
-    // 일반적으로 V8: "Unexpected token ... in JSON at position 123"
     const match = message.match(/position\s+(\d+)/i);
     if (!match) return `Invalid JSON: ${message}`;
     const pos = Number(match[1]);
@@ -222,9 +219,7 @@ export default function Home() {
           </p>
         </header>
 
-        {/* 자동광고 사용: 별도 배너 삽입 없음 */}
-
-        {/* 메인 레이아웃: 입력창과 출력창 */}
+        {/* Main editor */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
@@ -235,7 +230,7 @@ export default function Home() {
               <Textarea
                 value={inputJson}
                 onChange={(e) => setInputJson(e.target.value)}
-                placeholder="여기에 JSON 데이터를 붙여넣으세요..."
+                placeholder="Paste JSON here..."
                 className="w-full h-96 font-mono text-sm resize-none"
               />
               <input
@@ -269,7 +264,7 @@ export default function Home() {
           </Card>
         </div>
 
-        {/* 중앙: 컨트롤 */}
+        {/* Controls */}
         <div className="flex flex-col items-center gap-4 my-6">
           <div className="flex flex-wrap items-center justify-center gap-3">
             <label className="text-sm text-slate-600 dark:text-slate-300">
@@ -305,29 +300,25 @@ export default function Home() {
             <Button variant="ghost" onClick={handleClear}>Clear</Button>
           </div>
         </div>
-
-        {/* 자동광고 사용: 별도 배너 삽입 없음 */}
       </div>
-      {/* ================================================================== */}
-      {/* =================  여기부터 설명 콘텐츠 섹션  ================== */}
-      {/* ================================================================== */}
 
+      {/* Content section for policy */}
       <div className="w-full max-w-4xl mx-auto mt-16 text-slate-700 dark:text-slate-300">
         <div className="space-y-10">
           <div>
-              <h2 className="text-3xl font-bold text-center mb-6">About Our JSON Formatter</h2>
-              <p className="text-lg text-center text-slate-500 dark:text-slate-400 mb-8">
-                Experience faster and more intuitive JSON management in your browser.
-              </p>
+            <h2 className="text-3xl font-bold text-center mb-6">About Our JSON Formatter</h2>
+            <p className="text-lg text-center text-slate-500 dark:text-slate-400 mb-8">
+              Experience faster and more intuitive JSON management in your browser.
+            </p>
           </div>
 
           {/* Feature 1 */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div>
-                <h3 className="text-2xl font-semibold mb-3">What is JSON?</h3>
+              <h3 className="text-2xl font-semibold mb-3">What is JSON?</h3>
               <p>
-                  JSON (JavaScript Object Notation) is a lightweight data-interchange format
-                  that is easy for humans to read and write, and easy for machines to parse and generate.
+                JSON (JavaScript Object Notation) is a lightweight data-interchange format
+                that is easy for humans to read and write, and easy for machines to parse and generate.
               </p>
             </div>
             <div className="p-6 bg-slate-100 dark:bg-slate-800 rounded-lg">
@@ -346,93 +337,69 @@ export default function Home() {
           {/* Feature 2 */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div className="p-6 bg-slate-100 dark:bg-slate-800 rounded-lg md:order-last">
-                <h3 className="text-xl font-semibold mb-2">How to use</h3>
+              <h3 className="text-xl font-semibold mb-2">How to use</h3>
               <ul className="list-disc list-inside space-y-2">
-                  <li>Paste your JSON into the left panel.</li>
-                  <li>Click ‘Format’ to pretty-print instantly.</li>
-                  <li>Copy or download the result from the right panel.</li>
+                <li>Paste your JSON into the left panel.</li>
+                <li>Click ‘Format’ to pretty-print instantly.</li>
+                <li>Copy or download the result from the right panel.</li>
               </ul>
             </div>
             <div>
-                <h3 className="text-2xl font-semibold mb-3">Why use a formatter?</h3>
+              <h3 className="text-2xl font-semibold mb-3">Why use a formatter?</h3>
               <p>
-                  API responses and data files often come minified on a single line.
-                  A formatter applies indentation and line breaks so you can quickly
-                  understand structure, reducing debugging time and mistakes.
+                API responses and data files often come minified on a single line.
+                A formatter applies indentation and line breaks so you can quickly
+                understand structure, reducing debugging time and mistakes.
               </p>
             </div>
           </div>
 
-            {/* Best Practices */}
-            <div className="space-y-4">
-              <h3 className="text-2xl font-semibold">JSON Best Practices</h3>
-              <ul className="list-disc list-inside space-y-2">
-                <li>Use clear, consistent key names (e.g., lower camelCase).</li>
-                <li>Prefer ISO 8601 strings (UTC) for date/time.</li>
-                <li>Distinguish between null and empty strings.</li>
-                <li>Avoid unnecessary nesting; keep a consistent schema.</li>
-                <li>Do not mix number/string types; validate with a schema.</li>
-              </ul>
-            </div>
+          {/* Best Practices */}
+          <div className="space-y-4">
+            <h3 className="text-2xl font-semibold">JSON Best Practices</h3>
+            <ul className="list-disc list-inside space-y-2">
+              <li>Use clear, consistent key names (e.g., lower camelCase).</li>
+              <li>Prefer ISO 8601 strings (UTC) for date/time.</li>
+              <li>Distinguish between null and empty strings.</li>
+              <li>Avoid unnecessary nesting; keep a consistent schema.</li>
+              <li>Do not mix number/string types; validate with a schema.</li>
+            </ul>
+          </div>
 
-            {/* Common Errors */}
-            <div className="space-y-4">
-              <h3 className="text-2xl font-semibold">Common Errors</h3>
-              <ul className="list-disc list-inside space-y-2">
-                <li>Trailing commas after the last item are not allowed.</li>
-                <li>Use double quotes for keys and strings, not single quotes.</li>
-                <li>JSON does not support comments.</li>
-                <li>NaN/Infinity are not valid JSON numbers.</li>
-              </ul>
-            </div>
+          {/* Common Errors */}
+          <div className="space-y-4">
+            <h3 className="text-2xl font-semibold">Common Errors</h3>
+            <ul className="list-disc list-inside space-y-2">
+              <li>Trailing commas after the last item are not allowed.</li>
+              <li>Use double quotes for keys and strings, not single quotes.</li>
+              <li>JSON does not support comments.</li>
+              <li>NaN/Infinity are not valid JSON numbers.</li>
+            </ul>
+          </div>
 
-          {/* FAQ Section */}
-          {/* <div>
-            <h3 className="text-2xl font-semibold text-center mb-6">
-              자주 묻는 질문 (FAQ)
-            </h3>
-            <div className="space-y-4">
-              <details className="p-4 border rounded-lg bg-slate-100 dark:bg-slate-800">
-                <summary className="font-semibold cursor-pointer">
-                  Q: 이 도구는 무료인가요?
-                </summary>
-                <p className="mt-2">
-                  네, 이 JSON 포맷터는 완전히 무료로 제공됩니다. 자유롭게
-                  사용하고 동료에게 공유하세요!
-                </p>
-              </details>
-              <details className="p-4 border rounded-lg bg-slate-100 dark:bg-slate-800">
-                <summary className="font-semibold cursor-pointer">
-                  Q: 제 데이터는 안전한가요?
-                </summary>
-                <p className="mt-2">
-                  네, 안전합니다. 모든 포맷팅 과정은 사용자님의 웹 브라우저
-                  내에서만(클라이언트 사이드) 이루어집니다. 어떠한 데이터도 저희
-                  서버로 전송되거나 저장되지 않습니다.
-                </p>
-              </details>
-            </div>
-          </div> */}
+          {/* FAQ Section (English) */}
           <div>
-            <h3 className="text-2xl font-semibold text-center mb-6">자주 묻는 질문 (FAQ)</h3>
+            <h3 className="text-2xl font-semibold text-center mb-6">FAQ</h3>
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="item-1">
-                <AccordionTrigger>Q: 이 도구는 무료인가요?</AccordionTrigger>
+                <AccordionTrigger>Is this tool free?</AccordionTrigger>
                 <AccordionContent>
-                  네, 이 JSON 포맷터는 완전히 무료로 제공됩니다. 자유롭게 사용하고 동료에게 공유하세요!
+                  Yes. This JSON formatter is completely free to use.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-2">
-                <AccordionTrigger>Q: 제 데이터는 안전한가요?</AccordionTrigger>
+                <AccordionTrigger>Is my data safe?</AccordionTrigger>
                 <AccordionContent>
-                  네, 안전합니다. 모든 포맷팅 과정은 사용자님의 웹 브라우저 내에서만(클라이언트 사이드) 이루어집니다. 어떠한 데이터도 저희 서버로 전송되거나 저장되지 않습니다.
+                  All processing happens in your browser. No data is sent to our servers.
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
           </div>
-          
         </div>
       </div>
     </main>
   );
 }
+
+
+

@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://json-formatter.example.com";
-// 자동광고만 사용할 것이므로 환경변수 분기 제거
+// Using auto ads only; removed env conditionals
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -61,11 +61,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9152326797358801"
-          crossOrigin="anonymous"
-        ></script>
         <script
           type="application/ld+json"
           // JSON-LD for WebApplication schema
