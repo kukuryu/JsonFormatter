@@ -6,10 +6,7 @@ export default function AdsLayout({
   return (
     <>
       <Script
-        id="adsense-auto"
-        strategy="afterInteractive"
-        async
-        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9152326797358801"
+        async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9152326797358801"
         crossOrigin="anonymous"
       />
       {children}
