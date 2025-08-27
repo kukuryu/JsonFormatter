@@ -25,6 +25,23 @@ export default function AdBanner({
   useEffect(() => {
     if (!hasClient) return;
     if (!shouldRender) return;
+    // Ensure AdSense script exists (for manual unit rendering)
+    const SRC = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsClient}`;
+    const present = Array.from(document.getElementsByTagName("script")).some(
+      (s) => s.getAttribute("src") === SRC
+    );
+    if (!present) {
+      const s = document.createElement("script");
+      s.async = true;
+      s.src = SRC;
+      s.crossOrigin = "anonymous";
+      document.head.appendChild(s);
+      s.onload = () => {
+        // @ts-expect-error AdSense global
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      };
+      return;
+    }
     // @ts-expect-error AdSense global
     (window.adsbygoogle = window.adsbygoogle || []).push({});
   }, [hasClient, shouldRender]);

@@ -61,6 +61,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <meta name="google-adsense-account" content="ca-pub-9152326797358801" />
         <script
           type="application/ld+json"
           // JSON-LD for WebApplication schema

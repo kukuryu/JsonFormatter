@@ -18,6 +18,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import AdBanner from "@/components/ads/AdBanner";
 
 const SAMPLE_JSON = `{
   "user": {
@@ -219,6 +220,11 @@ export default function Home() {
           </p>
         </header>
 
+        {/* Ads: top */}
+        <div className="my-4">
+          <AdBanner dataAdSlot={process.env.NEXT_PUBLIC_ADSENSE_SLOT} dataAdFormat="auto" />
+        </div>
+
         {/* Main editor */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
@@ -299,6 +305,10 @@ export default function Home() {
             <Button variant="ghost" onClick={handleUploadClick}>Upload</Button>
             <Button variant="ghost" onClick={handleClear}>Clear</Button>
           </div>
+        </div>
+        {/* Ads: inline */}
+        <div className="my-4">
+          <AdBanner dataAdSlot={process.env.NEXT_PUBLIC_ADSENSE_SLOT} dataAdFormat="auto" />
         </div>
       </div>
 
