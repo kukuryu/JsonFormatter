@@ -49,6 +49,12 @@ export default function Home() {
   const [indent, setIndent] = useState<number>(2);
   const [sortKeys, setSortKeys] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  
+  // Policy gate for ads: show ads only when there is meaningful content
+  const MIN_CONTENT_LENGTH = 20;
+  const hasSufficientInput = (inputJson?.trim().length || 0) >= MIN_CONTENT_LENGTH;
+  const hasOutput = (outputJson?.trim().length || 0) > 0;
+  const canShowAds = !error && (hasOutput || hasSufficientInput);
 
   const handleFormat = () => {
     if (!inputJson.trim()) {
@@ -220,9 +226,9 @@ export default function Home() {
           </p>
         </header>
 
-        {/* Ads: top */}
+        {/* Ads: top (policy-gated) */}
         <div className="my-4">
-          <AdBanner dataAdSlot={process.env.NEXT_PUBLIC_ADSENSE_SLOT} dataAdFormat="auto" />
+          <AdBanner dataAdSlot={process.env.NEXT_PUBLIC_ADSENSE_SLOT} dataAdFormat="auto" canShow={canShowAds} />
         </div>
 
         {/* Main editor */}
@@ -306,9 +312,9 @@ export default function Home() {
             <Button variant="ghost" onClick={handleClear}>Clear</Button>
           </div>
         </div>
-        {/* Ads: inline */}
+        {/* Ads: inline (policy-gated) */}
         <div className="my-4">
-          <AdBanner dataAdSlot={process.env.NEXT_PUBLIC_ADSENSE_SLOT} dataAdFormat="auto" />
+          <AdBanner dataAdSlot={process.env.NEXT_PUBLIC_ADSENSE_SLOT} dataAdFormat="auto" canShow={canShowAds} />
         </div>
       </div>
 

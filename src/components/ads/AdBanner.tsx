@@ -7,6 +7,8 @@ type AdBannerProps = {
   dataAdFormat?: string;
   dataFullWidthResponsive?: boolean;
   className?: string;
+  // Additional policy gate: when false, ads will not render regardless of env
+  canShow?: boolean;
 };
 
 export default function AdBanner({
@@ -14,13 +16,14 @@ export default function AdBanner({
   dataAdFormat = "auto",
   dataFullWidthResponsive = true,
   className,
+  canShow = true,
 }: AdBannerProps) {
   const insRef = useRef<HTMLDivElement>(null);
   const hasClient = typeof window !== "undefined";
   const isProd = hasClient && process.env.NODE_ENV === "production";
   const testMode = hasClient && process.env.NEXT_PUBLIC_ADSENSE_TEST_MODE === "true";
   const adsClient = process.env.NEXT_PUBLIC_ADSENSE_CLIENT || "ca-pub-9152326797358801";
-  const shouldRender = (isProd || testMode) && !!adsClient && !!dataAdSlot;
+  const shouldRender = (isProd || testMode) && !!adsClient && !!dataAdSlot && !!canShow;
 
   useEffect(() => {
     if (!hasClient) return;
@@ -44,7 +47,7 @@ export default function AdBanner({
     }
     // @ts-expect-error AdSense global
     (window.adsbygoogle = window.adsbygoogle || []).push({});
-  }, [hasClient, shouldRender]);
+  }, [hasClient, shouldRender, adsClient]);
 
   if (!shouldRender) {
     return null;
