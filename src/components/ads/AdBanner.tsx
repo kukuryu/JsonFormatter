@@ -2,6 +2,13 @@
 
 import { useEffect, useRef } from "react";
 
+// AdSense global 타입 선언
+declare global {
+  interface Window {
+    adsbygoogle: Record<string, unknown>[];
+  }
+}
+
 type AdBannerProps = {
   dataAdSlot?: string;
   dataAdFormat?: string;
@@ -18,7 +25,7 @@ export default function AdBanner({
   className,
   canShow = true,
 }: AdBannerProps) {
-  const insRef = useRef<HTMLDivElement>(null);
+  const adRef = useRef<HTMLElement>(null);
   const hasClient = typeof window !== "undefined";
   const isProd = hasClient && process.env.NODE_ENV === "production";
   const testMode = hasClient && process.env.NEXT_PUBLIC_ADSENSE_TEST_MODE === "true";
@@ -26,36 +33,24 @@ export default function AdBanner({
   const shouldRender = (isProd || testMode) && !!adsClient && !!dataAdSlot && !!canShow;
 
   useEffect(() => {
-    if (!hasClient) return;
-    if (!shouldRender) return;
-    // Ensure AdSense script exists (for manual unit rendering)
-    const SRC = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsClient}`;
-    const present = Array.from(document.getElementsByTagName("script")).some(
-      (s) => s.getAttribute("src") === SRC
-    );
-    if (!present) {
-      const s = document.createElement("script");
-      s.async = true;
-      s.src = SRC;
-      s.crossOrigin = "anonymous";
-      document.head.appendChild(s);
-      s.onload = () => {
-        // @ts-expect-error AdSense global
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
-      };
-      return;
+    if (!hasClient || !shouldRender || !adRef.current) return;
+    
+    try {
+      // 애드센스 스크립트는 이미 layout.tsx에서 로드되므로 바로 광고 초기화
+      (window.adsbygoogle = window.adsbygoogle || []).push({});
+    } catch (error) {
+      console.error('AdSense 초기화 오류:', error);
     }
-    // @ts-expect-error AdSense global
-    (window.adsbygoogle = window.adsbygoogle || []).push({});
-  }, [hasClient, shouldRender, adsClient]);
+  }, [hasClient, shouldRender, dataAdSlot]);
 
   if (!shouldRender) {
     return null;
   }
 
   return (
-    <div className={className} ref={insRef}>
+    <div className={className}>
       <ins
+        ref={adRef}
         className="adsbygoogle"
         style={{ display: "block" }}
         data-ad-client={adsClient}
