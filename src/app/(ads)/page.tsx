@@ -62,9 +62,8 @@ export default function Home() {
       const formattedString = JSON.stringify(normalized, null, indent);
       setOutputJson(formattedString);
       setError("");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (e: any) {
-      const message: string = e?.message || "Invalid JSON";
+    } catch (e: unknown) {
+      const message: string = (e as Error)?.message || "Invalid JSON";
       const enhanced = enhanceJsonError(message, inputJson);
       setError(enhanced);
       setOutputJson("");
@@ -85,7 +84,7 @@ export default function Home() {
       setError("");
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
-      const message: string = e?.message || "Invalid JSON";
+      const message: string = (e as Error)?.message || "Invalid JSON";
       const enhanced = enhanceJsonError(message, inputJson);
       setError(enhanced);
       setOutputJson("");
@@ -127,7 +126,7 @@ export default function Home() {
       alert("Valid JSON ✔");
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
-      const message: string = e?.message || "Invalid JSON";
+      const message: string = (e as Error)?.message || "Invalid JSON";
       const enhanced = enhanceJsonError(message, inputJson);
       setError(enhanced);
       setOutputJson("");

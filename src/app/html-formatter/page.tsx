@@ -57,8 +57,8 @@ export default function HtmlFormatter() {
       });
       setOutputHtml(formatted);
       setError("");
-    } catch (e: any) {
-      const message: string = e?.message || "Failed to format HTML";
+    } catch (e: unknown) {
+      const message: string = (e as Error)?.message || "Failed to format HTML";
       setError(`Error formatting HTML: ${message}`);
       setOutputHtml("");
     }
@@ -77,8 +77,8 @@ export default function HtmlFormatter() {
         .trim();
       setOutputHtml(minified);
       setError("");
-    } catch (e: any) {
-      const message: string = e?.message || "Failed to minify HTML";
+    } catch (e: unknown) {
+      const message: string = (e as Error)?.message || "Failed to minify HTML";
       setError(`Error minifying HTML: ${message}`);
       setOutputHtml("");
     }
@@ -297,8 +297,8 @@ export default function HtmlFormatter() {
               <h3 className="text-xl font-semibold mb-2">How to use</h3>
               <ul className="list-disc list-inside space-y-2">
                 <li>Paste your HTML code into the left panel.</li>
-                <li>Click 'Format' to beautify your code.</li>
-                <li>Use 'Minify' to compress HTML for production.</li>
+                <li>Click &lsquo;Format&rsquo; to beautify your code.</li>
+                <li>Use &lsquo;Minify&rsquo; to compress HTML for production.</li>
                 <li>Copy or download the result.</li>
               </ul>
             </div>
@@ -307,7 +307,7 @@ export default function HtmlFormatter() {
               <p>
                 Properly formatted HTML improves code readability, makes debugging easier,
                 and helps maintain consistent coding standards across your project.
-                It's essential for collaborative development.
+                It&rsquo;s essential for collaborative development.
               </p>
             </div>
           </div>
@@ -355,7 +355,7 @@ export default function HtmlFormatter() {
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-3">
-                <AccordionTrigger>What's the difference between Format and Minify?</AccordionTrigger>
+                <AccordionTrigger>What&rsquo;s the difference between Format and Minify?</AccordionTrigger>
                 <AccordionContent>
                   Format adds proper indentation and line breaks for readability.
                   Minify removes unnecessary whitespace to reduce file size for production use.
