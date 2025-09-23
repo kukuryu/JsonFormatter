@@ -1,5 +1,3 @@
-// src/app/(ads)/page.tsx
-
 "use client";
 
 import { useRef, useState } from "react";
@@ -18,94 +16,88 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { html as beautifyHtml } from "js-beautify";
 
-const SAMPLE_JSON = `{
-  "user": {
-    "id": 123,
-    "name": "Jane Doe",
-    "email": "jane@example.com"
-  },
-  "roles": ["admin", "editor"],
-  "active": true,
-  "profile": {
-    "joinedAt": "2024-08-01T10:20:30.000Z",
-    "score": 9876
-  }
-}`;
+const SAMPLE_HTML = `<!DOCTYPE html><html><head><title>Sample</title></head><body><div class="container"><h1>Hello World</h1><p>This is a sample HTML document.</p><ul><li>Item 1</li><li>Item 2</li></ul></div></body></html>`;
 
 function computeInitialOutput(sample: string, indent: number) {
   try {
-    return JSON.stringify(JSON.parse(sample), null, indent);
+    return beautifyHtml(sample, {
+      indent_size: indent,
+      preserve_newlines: false,
+      max_preserve_newlines: 0,
+    });
   } catch {
     return "";
   }
 }
 
-export default function Home() {
-  const [inputJson, setInputJson] = useState(SAMPLE_JSON);
-  const [outputJson, setOutputJson] = useState(computeInitialOutput(SAMPLE_JSON, 2));
+export default function HtmlFormatter() {
+  const [inputHtml, setInputHtml] = useState(SAMPLE_HTML);
+  const [outputHtml, setOutputHtml] = useState(computeInitialOutput(SAMPLE_HTML, 2));
   const [error, setError] = useState("");
   const [indent, setIndent] = useState<number>(2);
-  const [sortKeys, setSortKeys] = useState<boolean>(false);
+  const [preserveNewlines, setPreserveNewlines] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  
+
 
   const handleFormat = () => {
-    if (!inputJson.trim()) {
-      setError("Please paste some JSON data first.");
-      setOutputJson("");
+    if (!inputHtml.trim()) {
+      setError("Please paste some HTML code first.");
+      setOutputHtml("");
       return;
     }
     try {
-      const parsedJson = JSON.parse(inputJson);
-      const normalized = sortKeys ? sortObjectDeep(parsedJson) : parsedJson;
-      const formattedString = JSON.stringify(normalized, null, indent);
-      setOutputJson(formattedString);
+      const formatted = beautifyHtml(inputHtml, {
+        indent_size: indent,
+        preserve_newlines: preserveNewlines,
+        max_preserve_newlines: preserveNewlines ? 2 : 0,
+        wrap_line_length: 0,
+        end_with_newline: true,
+      });
+      setOutputHtml(formatted);
       setError("");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
-      const message: string = e?.message || "Invalid JSON";
-      const enhanced = enhanceJsonError(message, inputJson);
-      setError(enhanced);
-      setOutputJson("");
+      const message: string = e?.message || "Failed to format HTML";
+      setError(`Error formatting HTML: ${message}`);
+      setOutputHtml("");
     }
   };
 
   const handleMinify = () => {
-    if (!inputJson.trim()) {
-      setError("Please paste some JSON data first.");
-      setOutputJson("");
+    if (!inputHtml.trim()) {
+      setError("Please paste some HTML code first.");
+      setOutputHtml("");
       return;
     }
     try {
-      const parsedJson = JSON.parse(inputJson);
-      const normalized = sortKeys ? sortObjectDeep(parsedJson) : parsedJson;
-      const minified = JSON.stringify(normalized);
-      setOutputJson(minified);
+      const minified = inputHtml
+        .replace(/>\s+</g, '><')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+      setOutputHtml(minified);
       setError("");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
-      const message: string = e?.message || "Invalid JSON";
-      const enhanced = enhanceJsonError(message, inputJson);
-      setError(enhanced);
-      setOutputJson("");
+      const message: string = e?.message || "Failed to minify HTML";
+      setError(`Error minifying HTML: ${message}`);
+      setOutputHtml("");
     }
   };
 
   const handleClear = () => {
-    setInputJson("");
-    setOutputJson("");
+    setInputHtml("");
+    setOutputHtml("");
     setError("");
   };
 
   const handleCopy = () => {
-    if (!outputJson || error) {
+    if (!outputHtml || error) {
       alert("There is nothing to copy!");
       return;
     }
-    navigator.clipboard.writeText(outputJson).then(
+    navigator.clipboard.writeText(outputHtml).then(
       () => {
-        alert("Formatted JSON copied to clipboard!");
+        alert("Formatted HTML copied to clipboard!");
       },
       (err) => {
         console.error("Could not copy text: ", err);
@@ -115,36 +107,38 @@ export default function Home() {
   };
 
   const handleValidate = () => {
-    if (!inputJson.trim()) {
-      setError("Please paste some JSON data first.");
-      setOutputJson("");
+    if (!inputHtml.trim()) {
+      setError("Please paste some HTML code first.");
+      setOutputHtml("");
       return;
     }
-    try {
-      const parsed = JSON.parse(inputJson);
+
+    // Basic HTML validation
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(inputHtml, 'text/html');
+    const parserErrors = doc.querySelectorAll('parsererror');
+
+    if (parserErrors.length > 0) {
+      setError("HTML has syntax errors");
+      setOutputHtml("");
+    } else {
       setError("");
-      setOutputJson(JSON.stringify(parsed, null, indent));
-      alert("Valid JSON ✔");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (e: any) {
-      const message: string = e?.message || "Invalid JSON";
-      const enhanced = enhanceJsonError(message, inputJson);
-      setError(enhanced);
-      setOutputJson("");
+      handleFormat();
+      alert("Valid HTML ✔");
     }
   };
 
   const handleDownload = () => {
-    const content = outputJson || inputJson;
+    const content = outputHtml || inputHtml;
     if (!content.trim()) {
       alert("There is nothing to download!");
       return;
     }
-    const blob = new Blob([content], { type: "application/json;charset=utf-8" });
+    const blob = new Blob([content], { type: "text/html;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "data.json";
+    a.download = "formatted.html";
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -159,7 +153,7 @@ export default function Home() {
     const reader = new FileReader();
     reader.onload = () => {
       const text = String(reader.result || "");
-      setInputJson(text);
+      setInputHtml(text);
       setError("");
     };
     reader.onerror = () => {
@@ -169,54 +163,15 @@ export default function Home() {
     e.currentTarget.value = "";
   };
 
-  function sortObjectDeep(value: unknown): unknown {
-    if (Array.isArray(value)) {
-      return value.map(sortObjectDeep);
-    }
-    if (value !== null && typeof value === "object") {
-      const sorted: Record<string, unknown> = {};
-      Object.keys(value as Record<string, unknown>)
-        .sort((a, b) => a.localeCompare(b))
-        .forEach((key) => {
-          sorted[key] = sortObjectDeep((value as Record<string, unknown>)[key]);
-        });
-      return sorted;
-    }
-    return value;
-  }
-
-  function enhanceJsonError(message: string, source: string) {
-    const match = message.match(/position\s+(\d+)/i);
-    if (!match) return `Invalid JSON: ${message}`;
-    const pos = Number(match[1]);
-    const { line, column } = getLineCol(source, pos);
-    return `Invalid JSON at line ${line}, column ${column}: ${message}`;
-  }
-
-  function getLineCol(text: string, index: number) {
-    let line = 1;
-    let col = 1;
-    for (let i = 0; i < text.length && i < index; i++) {
-      const ch = text.charAt(i);
-      if (ch === "\n") {
-        line++;
-        col = 1;
-      } else {
-        col++;
-      }
-    }
-    return { line, column: col };
-  }
-
   return (
     <main className="flex flex-col items-center p-4 sm:p-8 md:p-12 bg-slate-50 dark:bg-slate-900">
       <div className="w-full max-w-7xl">
         <header className="mb-8 text-center">
           <h1 className="text-4xl sm:text-5xl font-bold text-slate-800 dark:text-slate-200">
-            JSON Formatter
+            HTML Formatter
           </h1>
           <p className="text-slate-500 dark:text-slate-400 mt-2">
-            Paste your JSON and format, validate, or minify it instantly — offline and secure.
+            Format, beautify, and minify your HTML code instantly — offline and secure.
           </p>
         </header>
 
@@ -226,19 +181,19 @@ export default function Home() {
           <Card>
             <CardHeader>
               <CardTitle>Input</CardTitle>
-              <CardDescription>Paste JSON here or upload a file.</CardDescription>
+              <CardDescription>Paste HTML here or upload a file.</CardDescription>
             </CardHeader>
             <CardContent>
               <Textarea
-                value={inputJson}
-                onChange={(e) => setInputJson(e.target.value)}
-                placeholder="Paste JSON here..."
+                value={inputHtml}
+                onChange={(e) => setInputHtml(e.target.value)}
+                placeholder="Paste HTML here..."
                 className="w-full h-96 font-mono text-sm resize-none"
               />
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="application/json,.json,.txt"
+                accept="text/html,.html,.htm"
                 className="hidden"
                 onChange={handleUploadFile}
               />
@@ -249,7 +204,7 @@ export default function Home() {
             <CardHeader>
               <CardTitle>Output</CardTitle>
               <CardDescription>
-                Formatted/minified JSON will appear here.
+                Formatted/minified HTML will appear here.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -258,7 +213,7 @@ export default function Home() {
                   {error ? (
                     <span className="text-red-500">{error}</span>
                   ) : (
-                    outputJson || " "
+                    outputHtml || " "
                   )}
                 </code>
               </pre>
@@ -285,10 +240,10 @@ export default function Home() {
             <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
               <input
                 type="checkbox"
-                checked={sortKeys}
-                onChange={(e) => setSortKeys(e.target.checked)}
+                checked={preserveNewlines}
+                onChange={(e) => setPreserveNewlines(e.target.checked)}
               />
-              Sort keys
+              Preserve newlines
             </label>
           </div>
 
@@ -302,35 +257,35 @@ export default function Home() {
             <Button variant="ghost" onClick={handleClear}>Clear</Button>
           </div>
         </div>
+
       </div>
 
       {/* Content section for policy */}
       <div className="w-full max-w-4xl mx-auto mt-16 text-slate-700 dark:text-slate-300">
         <div className="space-y-10">
           <div>
-            <h2 className="text-3xl font-bold text-center mb-6">About Our JSON Formatter</h2>
+            <h2 className="text-3xl font-bold text-center mb-6">About Our HTML Formatter</h2>
             <p className="text-lg text-center text-slate-500 dark:text-slate-400 mb-8">
-              Experience faster and more intuitive JSON management in your browser.
+              Clean, format, and optimize your HTML code for better readability and maintenance.
             </p>
           </div>
 
           {/* Feature 1 */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div>
-              <h3 className="text-2xl font-semibold mb-3">What is JSON?</h3>
+              <h3 className="text-2xl font-semibold mb-3">What is HTML?</h3>
               <p>
-                JSON (JavaScript Object Notation) is a lightweight data-interchange format
-                that is easy for humans to read and write, and easy for machines to parse and generate.
+                HTML (HyperText Markup Language) is the standard markup language for creating web pages.
+                It describes the structure of a web page using elements and tags.
               </p>
             </div>
             <div className="p-6 bg-slate-100 dark:bg-slate-800 rounded-lg">
               <pre>
                 <code className="font-mono text-sm">
-                  {`{
-  "name": "John Doe",
-  "age": 30,
-  "isStudent": false
-}`}
+                  {`<div class="container">
+  <h1>Hello World</h1>
+  <p>Welcome to HTML!</p>
+</div>`}
                 </code>
               </pre>
             </div>
@@ -341,58 +296,69 @@ export default function Home() {
             <div className="p-6 bg-slate-100 dark:bg-slate-800 rounded-lg md:order-last">
               <h3 className="text-xl font-semibold mb-2">How to use</h3>
               <ul className="list-disc list-inside space-y-2">
-                <li>Paste your JSON into the left panel.</li>
-                <li>Click ‘Format’ to pretty-print instantly.</li>
-                <li>Copy or download the result from the right panel.</li>
+                <li>Paste your HTML code into the left panel.</li>
+                <li>Click 'Format' to beautify your code.</li>
+                <li>Use 'Minify' to compress HTML for production.</li>
+                <li>Copy or download the result.</li>
               </ul>
             </div>
             <div>
-              <h3 className="text-2xl font-semibold mb-3">Why use a formatter?</h3>
+              <h3 className="text-2xl font-semibold mb-3">Why format HTML?</h3>
               <p>
-                API responses and data files often come minified on a single line.
-                A formatter applies indentation and line breaks so you can quickly
-                understand structure, reducing debugging time and mistakes.
+                Properly formatted HTML improves code readability, makes debugging easier,
+                and helps maintain consistent coding standards across your project.
+                It's essential for collaborative development.
               </p>
             </div>
           </div>
 
           {/* Best Practices */}
           <div className="space-y-4">
-            <h3 className="text-2xl font-semibold">JSON Best Practices</h3>
+            <h3 className="text-2xl font-semibold">HTML Best Practices</h3>
             <ul className="list-disc list-inside space-y-2">
-              <li>Use clear, consistent key names (e.g., lower camelCase).</li>
-              <li>Prefer ISO 8601 strings (UTC) for date/time.</li>
-              <li>Distinguish between null and empty strings.</li>
-              <li>Avoid unnecessary nesting; keep a consistent schema.</li>
-              <li>Do not mix number/string types; validate with a schema.</li>
+              <li>Use semantic HTML5 elements (header, main, section, etc.).</li>
+              <li>Always include proper DOCTYPE declaration.</li>
+              <li>Use lowercase for tag names and attributes.</li>
+              <li>Quote attribute values consistently.</li>
+              <li>Include alt attributes for images.</li>
+              <li>Validate your HTML for accessibility and standards compliance.</li>
             </ul>
           </div>
 
-          {/* Common Errors */}
+          {/* Common Issues */}
           <div className="space-y-4">
-            <h3 className="text-2xl font-semibold">Common Errors</h3>
+            <h3 className="text-2xl font-semibold">Common HTML Issues</h3>
             <ul className="list-disc list-inside space-y-2">
-              <li>Trailing commas after the last item are not allowed.</li>
-              <li>Use double quotes for keys and strings, not single quotes.</li>
-              <li>JSON does not support comments.</li>
-              <li>NaN/Infinity are not valid JSON numbers.</li>
+              <li>Unclosed tags can break layout and styling.</li>
+              <li>Missing quotes around attribute values.</li>
+              <li>Incorrect nesting of elements.</li>
+              <li>Using deprecated HTML elements or attributes.</li>
+              <li>Missing required attributes (like alt for images).</li>
             </ul>
           </div>
 
-          {/* FAQ Section (English) */}
+          {/* FAQ Section */}
           <div>
             <h3 className="text-2xl font-semibold text-center mb-6">FAQ</h3>
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="item-1">
-                <AccordionTrigger>Is this tool free?</AccordionTrigger>
+                <AccordionTrigger>Is this HTML formatter free?</AccordionTrigger>
                 <AccordionContent>
-                  Yes. This JSON formatter is completely free to use.
+                  Yes. This HTML formatter is completely free to use with no limitations.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-2">
-                <AccordionTrigger>Is my data safe?</AccordionTrigger>
+                <AccordionTrigger>Is my HTML code safe?</AccordionTrigger>
                 <AccordionContent>
-                  All processing happens in your browser. No data is sent to our servers.
+                  All processing happens in your browser. No HTML code is sent to our servers.
+                  Your code remains completely private and secure.
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="item-3">
+                <AccordionTrigger>What's the difference between Format and Minify?</AccordionTrigger>
+                <AccordionContent>
+                  Format adds proper indentation and line breaks for readability.
+                  Minify removes unnecessary whitespace to reduce file size for production use.
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
@@ -402,6 +368,3 @@ export default function Home() {
     </main>
   );
 }
-
-
-
